@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+
+from kafka import KafkaConsumer
+from kafka.structs import TopicPartition
+
+BOOTSTRAP_SERVERS = "192.168.80.34:9092"
+TOPIC = "gittba_BNB_VWAP"
+GROUP_ID = "gittba05_vwap_wait"
+
+def main() -> None:
+    consumer = KafkaConsumer(
+        bootstrap_servers=[BOOTSTRAP_SERVERS],
+        group_id=GROUP_ID,
+        auto_offset_reset="earliest",
+        enable_auto_commit=True,
+        key_deserializer=lambda v: v.decode("utf-8") if v else None,
+        value_deserializer=lambda v: v.decode("utf-8") if v else None
+    )
+
+    consumer.assign([TopicPartition(TOPIC, 0)])
+
+    print("Esperando mensajes en el topic... Pulsa Ctrl+C para parar")
+
+    try:
+        for consumer_record in consumer:
+            print("key:       " + str(consumer_record.key))
+            print("value:     " + str(consumer_record.value))
+            print("offset:    " + str(consumer_record.offset))
+            print("timestamp: " + str(consumer_record.timestamp))
+            print("-" * 40)
+
+    except KeyboardInterrupt:
+        print("Consumer detenido")
+
+    finally:
+        consumer.close()
+
+if __name__ == "__main__":
+    main()
